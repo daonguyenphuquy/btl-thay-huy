@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieLens Recommender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <h1>MovieLens</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}" class="active"><i class="fas fa-home"></i> Trang chủ</a></li>
+                    <li><a href="{{ url_for('analytics') }}"><i class="fas fa-chart-bar"></i> Phân tích</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2>Khám phá thế giới phim với MovieLens</h2>
+                <p>Nhận khuyến nghị cá nhân hóa dựa trên sở thích của bạn với công nghệ tiên tiến.</p>
+                <form class="recommendation-form" action="{{ url_for('recommend') }}" method="POST">
+                    <div class="form-group">
+                        <label for="user_id">Chọn người dùng:</label>
+                        <select name="user_id" id="user_id" required>
+                            {% for user in all_users %}
+                            <option value="{{ user }}">{{ user }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="num_recommendations">Số lượng khuyến nghị:</label>
+                        <input type="number" name="num_recommendations" id="num_recommendations" value="10" min="1" max="20">
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-play"></i> Nhận khuyến nghị</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Top Movies Section -->
+    <section class="top-movies">
+        <div class="container">
+            <h2><i class="fas fa-star"></i> Phim đình đám nhất</h2>
+            <div class="movie-grid">
+                {% for movie in top_movies %}
+                <div class="movie-card">
+                    <div class="movie-poster" style="background-image: url('{{ movie.poster_url }}');">
+                        <div class="movie-rating">
+                            <i class="fas fa-star"></i> {{ movie.avg_rating|round(1) }}
+                        </div>
+                    </div>
+                    <div class="movie-info">
+                        <h3>{{ movie.title }}</h3>
+                        <div class="movie-genres">{{ movie.genres }}</div>
+                        <div class="movie-stats">
+                            <i class="fas fa-users"></i> {{ movie.count }} đánh giá
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- About System Section -->
+    <section class="about-system">
+        <div class="container">
+            <div class="about-content">
+                <h2>Về chúng tôi</h2>
+                <p>MovieLens Recommender sử dụng công nghệ học máy để cung cấp các khuyến nghị phim chính xác dựa trên lịch sử đánh giá của bạn. Với dữ liệu từ hàng ngàn người dùng, chúng tôi giúp bạn khám phá những bộ phim tuyệt vời!</p>
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <i class="fas fa-search"></i>
+                        <h3>Khuyến nghị thông minh</h3>
+                        <p>Sử dụng thuật toán SVD để đưa ra các gợi ý phù hợp nhất.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-pie"></i>
+                        <h3>Phân tích dữ liệu</h3>
+                        <p>Xem các thống kê và xu hướng từ cộng đồng người dùng.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Cộng đồng lớn</h3>
+                        <p>Hỗ trợ từ hàng ngàn người dùng trên toàn cầu.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 MovieLens Recommender. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

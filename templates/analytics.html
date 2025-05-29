@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân tích dữ liệu phim</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <h1>MovieLens Recommender</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Trang chủ</a></li>
+                    <li><a href="{{ url_for('analytics') }}" class="active"><i class="fas fa-chart-bar"></i> Phân tích</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="analytics-intro">
+        <div class="container">
+            <h2>Phân tích dữ liệu MovieLens</h2>
+            <p>Khám phá các xu hướng và mẫu từ bộ dữ liệu đánh giá phim của chúng tôi.</p>
+            
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ stats.num_users }}</h3>
+                        <p>Người dùng</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ stats.num_movies }}</h3>
+                        <p>Bộ phim</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ stats.num_ratings }}</h3>
+                        <p>Đánh giá</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ "%.2f"|format(stats.avg_rating) }}</h3>
+                        <p>Đánh giá TB</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="data-visualization">
+        <div class="container">
+            <h2>Trực quan hóa dữ liệu</h2>
+            
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <h3>Phân phối đánh giá</h3>
+                    <canvas id="ratingDistributionChart"></canvas>
+                </div>
+                
+                <div class="chart-wrapper">
+                    <h3>Thể loại phim phổ biến</h3>
+                    <canvas id="genreDistributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-wrapper full-width">
+                    <h3>Phân phối phim theo năm phát hành</h3>
+                    <canvas id="yearDistributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-wrapper full-width">
+                    <h3>Tương quan giữa số lượng đánh giá và điểm trung bình</h3>
+                    <canvas id="scatterChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Movie Recommendation System | Dữ liệu từ MovieLens</p>
+        </div>
+    </footer>
+
+    <script>
+        // Dữ liệu từ backend
+        const ratingDistribution = {{ rating_distribution|safe }};
+        const genreDistribution = {{ genre_distribution|safe }};
+        
+        // Chuẩn bị dữ liệu cho biểu đồ phân phối đánh giá
+        const ratingLabels = ratingDistribution.map(item => item.rating);
+        const ratingCounts = ratingDistribution.map(item => item.count);
+        
+        // Chuẩn bị dữ liệu cho biểu đồ phân phối thể loại
+        const sortedGenres = genreDistribution.sort((a, b) => b.count - a.count).slice(0, 10);
+        const genreLabels = sortedGenres.map(item => item.genre);
+        const genreCounts = sortedGenres.map(item => item.count);
+        
+        // Tạo biểu đồ phân phối đánh giá
+        new Chart(document.getElementById('ratingDistributionChart'), {
+            type: 'bar',
+            data: {
+                labels: ratingLabels,
+                datasets: [{
+                    label: 'Số lượng đánh giá',
+                    data: ratingCounts,
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Số lượng'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Điểm đánh giá'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Tạo biểu đồ phân phối thể loại
+        new Chart(document.getElementById('genreDistributionChart'), {
+            type: 'horizontalBar',
+            data: {
+                labels: genreLabels,
+                datasets: [{
+                    label: 'Số lượng phim',
+                    data: genreCounts,
+                    backgroundColor: 'rgba(153, 102, 255, 0.7)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Số lượng phim'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Fetch dữ liệu bổ sung cho các biểu đồ khác
+        fetch('/api/movie_data')
+            .then(response => response.json())
+            .then(data => {
+                // Biểu đồ phân phối năm phát hành
+                const yearData = data.year_distribution;
+                const years = yearData.map(item => item.year);
+                const movieCounts = yearData.map(item => item.count);
+                
+                new Chart(document.getElementById('yearDistributionChart'), {
+                    type: 'line',
+                    data: {
+                        labels: years,
+                        datasets: [{
+                            label: 'Số lượng phim',
+                            data: movieCounts,
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Số lượng phim'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Năm phát hành'
+                                },
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 20
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Biểu đồ tán xạ số lượng đánh giá và điểm trung bình
+                const scatterData = data.movie_ratings_scatter;
+                
+                new Chart(document.getElementById('scatterChart'), {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Phim',
+                            data: scatterData.map(item => ({
+                                x: item.count,
+                                y: item.rating,
+                                title: item.title
+                            })),
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                type: 'logarithmic',
+                                title: {
+                                    display: true,
+                                    text: 'Số lượng đánh giá (log scale)'
+                                }
+                            },
+                            y: {
+                                min: 0,
+                                max: 5,
+                                title: {
+                                    display: true,
+                                    text: 'Điểm đánh giá trung bình'
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const point = context.raw;
+                                        return `${point.title}: ${point.y} ⭐ (${point.x} đánh giá)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
